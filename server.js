@@ -1,24 +1,11 @@
 var net = require("net");
 var crypto = require("crypto");
+var common = require("./common");
 
-//directions enum
-var dirs = {
-  UP: 1,
-  DOWN: 2,
-  RIGHT: 3,
-  LEFT: 4
-};
-//opposites map
-var ops = {
-  1: 2,
-  2: 1,
-  3: 4,
-  4: 3
-};
 //game state
 var game = {
-  w: 100,
-  h: 60,
+  w: 60,
+  h: 20,
   players: {}
 };
 //open sockets list
@@ -30,14 +17,32 @@ var pushUpdate = function() {
     socks[id].write(buff);
 };
 
+var resetPlayer = function(game, walls, player) {
+
+  do {
+    player.x = player.sx = Math.floor(Math.random()*(game.w-1)+1);
+    player.y = player.sy = Math.floor(Math.random()*(game.h-1)+1);
+  } while(walls[player.x] && walls[player.x][player.y]);
+
+  player.dead = false;
+  player.timeout = 5;
+  if('lives' in player)
+    player.lives--;
+  else
+    player.lives = 20;
+  player.moves = [{
+    v: 0,
+    d: Math.floor(Math.random()*4)+1
+  }];
+};
+
 var onConnection = function(sock) {
 
   var id = crypto.randomBytes(2).toString('hex');
-  var player = {
-    x: 50,
-    y: 30,
-    d: dirs.RIGHT
-  };
+  //create player
+  var walls = common.getWalls(game);
+  var player = {};
+  resetPlayer(game, walls, player);
 
   console.log(id, 'connected');
 
@@ -66,32 +71,40 @@ var onConnection = function(sock) {
 };
 
 setInterval(function tick() {
+
+  var walls = common.getWalls(game);
+
   //every tick, advance all players 1 unit
   for(var id in game.players) {
     var player = game.players[id];
 
-    if(player.nextd && ops[player.nextd] !== player.d) {  
-      player.d = player.nextd;
-      player.nextd = undefined;
+    if(player.dead) {
+      if(player.lives > 0)
+        if(player.timeout === 0)
+          resetPlayer(game, walls, player);
+        else
+          player.timeout--;
+      continue;
     }
 
-    switch(player.d) {
-    case dirs.UP:
-      player.y--;
-      break;
-    case dirs.DOWN:
-      player.y++;
-      break;
-    case dirs.LEFT:
-      player.x--;
-      break;
-    case dirs.RIGHT:
-      player.x++;
-      break;
+    var move = player.moves[player.moves.length-1];
+    if(player.nextd && common.ops[player.nextd] !== move.d) { 
+      move = {
+        v: 0,
+        d: player.nextd
+      };
+      player.nextd = undefined;
+      player.moves.push(move);
+    }
+    common.increment(player, move.d);
+    move.v++;
+    //did player just move into a wall?
+    if(walls[player.x] && walls[player.x][player.y]) {
+      player.dead = true;
     }
   }
   pushUpdate();
-}, 1000);
+}, 100);
 
 var server = net.createServer(onConnection);
 
