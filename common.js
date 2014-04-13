@@ -15,15 +15,17 @@ exports.ops = {
 };
 
 exports.arrows = {
-  1: '↑',
-  2: '↓',
-  3: '→',
-  4: '←'
+  1: '◿◺',
+  2: '◹◸',
+  3: '▒▷',
+  4: '◁▒'
 };
 
 exports.colors = [
   "yellow",
-  "cyan"
+  "cyan",
+  "green",
+  "blue"
 ];
 
 exports.increment = function(pos, dir) {

@@ -5,7 +5,7 @@ var common = require("./common");
 //game state
 var game = {
   w: 60,
-  h: 20,
+  h: 30,
   players: {}
 };
 //open sockets list
@@ -19,21 +19,39 @@ var pushUpdate = function() {
 
 var resetPlayer = function(game, walls, player) {
 
-  do {
-    player.x = player.sx = Math.floor(Math.random()*(game.w-1)+1);
-    player.y = player.sy = Math.floor(Math.random()*(game.h-1)+1);
-  } while(walls[player.x] && walls[player.x][player.y]);
+  var dir = Math.floor(Math.random()*4)+1;
+  var w = 0, x, y, pos;
+  var lookahead = 5;
 
+  //random spawn point (with 5 units clear ahead)
+  do {
+    x = Math.floor(Math.random()*(game.w-1)+1);
+    y = Math.floor(Math.random()*(game.h-1)+1);
+    pos = {x:x,y:y};
+    //check 3 units ahead
+    if(!walls[pos.x] || !walls[pos.x][pos.y]) {
+      for(w = 0; w < lookahead; w++) {
+        common.increment(pos, dir);
+        if(walls[pos.x] && walls[pos.x][pos.y])
+          break;
+      }
+    }
+  } while(w < lookahead);
+
+  player.x = player.sx = x;
+  player.y = player.sy = y;
   player.dead = false;
   player.timeout = 5;
   if('lives' in player)
     player.lives--;
   else
     player.lives = 20;
+
   player.moves = [{
     v: 0,
-    d: Math.floor(Math.random()*4)+1
+    d: dir
   }];
+
 };
 
 var onConnection = function(sock) {
@@ -104,7 +122,7 @@ setInterval(function tick() {
     }
   }
   pushUpdate();
-}, 100);
+}, 50);
 
 var server = net.createServer(onConnection);
 

@@ -32,59 +32,48 @@ function receivedState(buff) {
   } catch(err) {
     return;
   }
-
   // console.log('GET WALLS')
   var walls = common.getWalls(game);
   // console.log(JSON.stringify(game, null, 2));
   // return;
-
   process.stdout.write('\n');
-  clear();
-  process.stdout.write('[LUMA TRON]');
-
-
-  var i = 0;
+  clear(false);
+  //draw header
+  process.stdout.write('['+'LUMA'.red+' TRON]');
+  var c = 0;
   for(var id in game.players) {
     var p = game.players[id];
-    p.color = common.colors[i++];
-    var status = ' '+id+' +'+p.lives+' ';
-    if(p.dead)
-      status += '(X, X)';
-    else
-      status += '('+p.x+', '+p.y+')';
+    p.color = common.colors[c++];
+    var status = ' ['+id+' ♥'+p.lives+']';
     process.stdout.write(status[p.color]);
   }
   process.stdout.write('             \n');
-
-
+  //draw game
   for(var y = 0; y < game.h; y++) {
     for(var x = 0; x < game.w; x++) {
-
       var char;
       //boundary wall
       if(walls[x][y] === true) {
-        char = '▒';
-
+        char = '▒▒';
       //player wall
       } else if(walls[x][y]) {
         var player = walls[x][y];
         var move = player.moves[player.moves.length-1];
         if(player.x === x &&
            player.y === y) {
-          char = player.dead ? 'X' : common.arrows[move.d];
+          char = player.dead ? '☠☠' : common.arrows[move.d];
         } else {
-          char = '▒';
+          char = '▒▒';
         }
         char = char[player.color];
       //no wall!
       } else {
-        char = ' ';
+        char = '  ';
       }
-      process.stdout.write((char+char));
+      process.stdout.write(char);
     }
     process.stdout.write('\n');
   }
-
 }
 
 function disconnected(err) {
