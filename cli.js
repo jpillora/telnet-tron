@@ -8,7 +8,7 @@ program
   .usage('[options]')
   .option('-s, --server', 'Server mode', false)
   .option('-c, --client', 'Client mode', true)
-  .option('-h, --host [ip]', 'Host [ip] to bind on', "0.0.0.0")
+  .option('-H, --host [ip]', 'Host [ip] to bind on', "0.0.0.0")
   .option('-p, --port [number]', 'Port [number] to listen on', 3000)
   .parse(process.argv);
 
