@@ -126,6 +126,6 @@ setInterval(function tick() {
 
 var server = net.createServer(onConnection);
 
-server.listen(3000, function() {
-  console.log('listening on 3000');
+server.listen(process.env.PORT || 3000, process.env.HOST || 'localhost', function() {
+  console.log('listening...');
 });

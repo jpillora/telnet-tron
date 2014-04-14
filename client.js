@@ -88,7 +88,7 @@ function disconnected(err) {
 }
 
 function connect() {
-  socket = net.connect(3000);
+  socket = net.connect(process.env.PORT || 3000, process.env.HOST || 'localhost');
   socket.setNoDelay(true);
   socket.on('data', receivedState);
   socket.on('error', disconnected);
